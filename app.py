@@ -34,8 +34,8 @@ def main():
     
     
 st.markdown(" <br><br>", unsafe_allow_html=True)
-    st.image("https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg", caption="2025/06 本月考核等級分布", use_column_width=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+st.image("https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg", caption="2025/06 本月考核等級分布", use_column_width=True)
+st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔎 查詢", type="primary"):
         st.subheader("📈 本月考核等級分布")
         st.dataframe(df_dist, use_container_width=True)
