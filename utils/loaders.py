@@ -1,6 +1,6 @@
 import pandas as pd
 
-FILE_URL = "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06_MST-PA.xlsx"
+FILE_URL = "https://github.com/ainstaccc/kpi-checker/raw/refs/heads/main/2025.06_MST-PA.xlsx"
 
 def load_excel_data():
     xls = pd.ExcelFile(FILE_URL, engine="openpyxl")
