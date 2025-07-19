@@ -1,49 +1,68 @@
+
 import streamlit as st
 import pandas as pd
-from utils.loaders import load_data, filter_data
 
-# 載入資料
-df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month = load_data()
+FILE_URL = "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06_MST-PA.xlsx"
 
-# 頁面設定
-st.set_page_config(page_title="米斯特門市月考核查詢平台", layout="wide")
-st.title("米斯特門市月考核查詢平台")
+@st.cache_data(ttl=3600)
+def load_data():
+    xls = pd.ExcelFile(FILE_URL, engine="openpyxl")
+    df_summary = xls.parse("門店 考核總表", header=1)
+    df_eff = xls.parse("人效分析", header=1)
+    df_mgr = xls.parse("店長副店 考核明細", header=1)
+    df_staff = xls.parse("店員儲備 考核明細", header=1)
+    df_dist = xls.parse("等級分布", header=None, nrows=15, usecols="A:N")
+    summary_month = xls.parse("門店 考核總表", nrows=1).columns[0]
+    return df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month
 
-st.markdown("### 查詢條件")
-st.markdown('<span style="color:red">📌 查詢條件擇一填寫即可，避免多重條件造成錯誤。</span>', unsafe_allow_html=True)
+def filter_data(df, col, keyword):
+    if keyword:
+        return df[df[col].astype(str).str.contains(keyword)]
+    return df
 
-# 查詢條件輸入（皆為非必填）
-col1, col2 = st.columns(2)
-with col1:
-    name = st.text_input("姓名（可模糊搜尋）")
-    emp_id = st.text_input("員工編號")
-with col2:
-    dept_code = st.text_input("部門編號")
-    manager = st.text_input("區主管")
+def main():
+    st.title("📊 門市考核查詢系統")
+    df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month = load_data()
 
-# 執行查詢
-if st.button("查詢"):
-    try:
-        df_filtered = filter_data(df_summary, df_eff, df_mgr, df_staff, name, emp_id, dept_code, manager)
+    st.markdown(f"### 🔎 查詢條件（{summary_month}）")
+    st.caption("⚠️ 區主管、部門編號、員工編號、姓名、查詢月份 擇一填寫即可，避免多重條件造成錯誤")
 
-        if df_filtered.empty:
-            st.warning("查無符合資料，請確認查詢條件是否正確。")
-        else:
-            st.success("查詢成功，以下為查詢結果：")
-            # 數值欄位僅顯示小數點後一位
-            for col in df_filtered.select_dtypes(include='number').columns:
-                df_filtered[col] = df_filtered[col].round(1)
-            st.dataframe(df_filtered, use_container_width=True)
+    col1, col2 = st.columns(2)
+    col3, col4 = st.columns(2)
 
-    except KeyError as e:
-        st.error(f"欄位錯誤：{e}。請確認試算表中的欄位名稱是否正確對應。")
-    except Exception as e:
-        st.error(f"發生錯誤：{str(e)}")
+    keyword_mgr = col1.text_input("區主管")
+    keyword_dept = col2.text_input("部門編號")
+    keyword_id = col3.text_input("員工編號")
+    keyword_name = col4.text_input("姓名")
+    keyword_month = st.text_input("查詢月份", value=summary_month)
 
-# 顯示考核月份
-with st.expander("目前資料月份"):
-    st.write(f"📅 {summary_month}")
+    filtered_summary = df_summary.copy()
+    if keyword_month and keyword_month != summary_month:
+        st.warning(f"⚠️ 資料月份為 {summary_month}，查詢月份「{keyword_month}」無效，將使用資料月份查詢。")
 
-# 顯示考核等級分布
-st.markdown("### 本次考核等級分布")
-st.dataframe(df_dist, use_container_width=True)
+    if keyword_mgr:
+        filtered_summary = filter_data(filtered_summary, "區主管", keyword_mgr)
+    if keyword_dept:
+        filtered_summary = filter_data(filtered_summary, "部門編號", keyword_dept)
+    if keyword_id:
+        filtered_summary = filter_data(filtered_summary, "員工編號", keyword_id)
+    if keyword_name:
+        filtered_summary = filter_data(filtered_summary, "人員姓名", keyword_name)
+
+    st.markdown("## 📋 查詢結果：門店 考核總表")
+    st.dataframe(filtered_summary, use_container_width=True)
+
+    st.markdown("## 📈 等級分布表")
+    st.dataframe(df_dist, use_container_width=True)
+
+    st.markdown("## 👥 查詢結果：人效分析")
+    st.dataframe(filter_data(df_eff, "員工編號", keyword_id), use_container_width=True)
+
+    st.markdown("## 🧑‍💼 查詢結果：店長/副店 考核明細")
+    st.dataframe(filter_data(df_mgr, "員工編號", keyword_id), use_container_width=True)
+
+    st.markdown("## 👕 查詢結果：店員/儲備 考核明細")
+    st.dataframe(filter_data(df_staff, "員工編號", keyword_id), use_container_width=True)
+
+if __name__ == "__main__":
+    main()
