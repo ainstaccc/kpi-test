@@ -64,6 +64,25 @@ def main():
         st.markdown("## 👟 店員/儲備 考核明細")
         st.dataframe(df_staff_result if not df_staff_result.empty else df_staff.head(0), use_container_width=True)
 
+        
+        # 匯出結果按鈕
+        from io import BytesIO
+        import zipfile
+
+        export_zip = BytesIO()
+        with zipfile.ZipFile(export_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("門店考核總表.csv", df_result.to_csv(index=False, encoding="utf-8-sig"))
+            zf.writestr("人效分析.csv", df_eff_result.to_csv(index=False, encoding="utf-8-sig"))
+            zf.writestr("店長副店 考核明細.csv", df_mgr_result.to_csv(index=False, encoding="utf-8-sig"))
+            zf.writestr("店員儲備 考核明細.csv", df_staff_result.to_csv(index=False, encoding="utf-8-sig"))
+
+        st.download_button(
+            label="📥 匯出查詢結果（Excel ZIP）",
+            data=export_zip.getvalue(),
+            file_name="查詢結果.zip",
+            mime="application/zip"
+        )
+
         st.markdown("#### ※如對分數有疑問，請洽區主管/品牌經理說明。")
 
 if __name__ == "__main__":
