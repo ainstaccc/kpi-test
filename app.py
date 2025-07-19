@@ -32,10 +32,11 @@ def main():
         month = st.selectbox("查詢月份", options=["2025/06"])
 
     
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    
+st.markdown(" <br><br>", unsafe_allow_html=True)
     st.image("https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg", caption="2025/06 本月考核等級分布", use_column_width=True)
-
-if st.button("🔎 查詢"):
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🔎 查詢", type="primary"):
         st.subheader("📈 本月考核等級分布")
         st.dataframe(df_dist, use_container_width=True)
 
@@ -60,7 +61,7 @@ if st.button("🔎 查詢"):
         st.dataframe(df_result, use_container_width=True)
 
         st.markdown("## 👥 人效分析")
-        st.dataframe(df_eff_result, use_container_width=True)
+        st.dataframe(df_eff_result_fmt, use_container_width=True)
 
         st.markdown("## 👔 店長/副店 考核明細")
         st.dataframe(df_mgr_result if not df_mgr_result.empty else df_mgr.head(0), use_container_width=True)
@@ -87,7 +88,7 @@ if st.button("🔎 查詢"):
             mime="application/zip"
         )
 
-        st.markdown("<p style='color:red;font-weight:bold'>※如對分數有疑問，請洽區主管/品牌經理說明。</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:red;font-weight:bold;font-size:16px;'>※如對分數有疑問，請洽區主管/品牌經理說明。</p>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
