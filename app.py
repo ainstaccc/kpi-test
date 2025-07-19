@@ -1,41 +1,49 @@
 import streamlit as st
 import pandas as pd
-from utils.auth import check_login
-from utils.loaders import load_excel_data, filter_data
-from utils.display import display_summary_table, display_efficiency_table, display_detail_tables, display_grade_distribution
+from utils.loaders import load_data, filter_data
 
+# 載入資料
+df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month = load_data()
+
+# 頁面設定
 st.set_page_config(page_title="米斯特門市月考核查詢平台", layout="wide")
+st.title("米斯特門市月考核查詢平台")
 
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+st.markdown("### 查詢條件")
+st.markdown('<span style="color:red">📌 查詢條件擇一填寫即可，避免多重條件造成錯誤。</span>', unsafe_allow_html=True)
 
-if not st.session_state.authenticated:
-    st.session_state.authenticated = check_login()
+# 查詢條件輸入（皆為非必填）
+col1, col2 = st.columns(2)
+with col1:
+    name = st.text_input("姓名（可模糊搜尋）")
+    emp_id = st.text_input("員工編號")
+with col2:
+    dept_code = st.text_input("部門編號")
+    manager = st.text_input("區主管")
 
-if st.session_state.authenticated:
-    st.title("米斯特門市月考核查詢平台")
+# 執行查詢
+if st.button("查詢"):
+    try:
+        df_filtered = filter_data(df_summary, df_eff, df_mgr, df_staff, name, emp_id, dept_code, manager)
 
-    df_summary, df_eff, df_mgr, df_staff, df_grade, summary_month = load_excel_data()
+        if df_filtered.empty:
+            st.warning("查無符合資料，請確認查詢條件是否正確。")
+        else:
+            st.success("查詢成功，以下為查詢結果：")
+            # 數值欄位僅顯示小數點後一位
+            for col in df_filtered.select_dtypes(include='number').columns:
+                df_filtered[col] = df_filtered[col].round(1)
+            st.dataframe(df_filtered, use_container_width=True)
 
-    with st.sidebar:
-        st.header("查詢條件")
-        selected_manager = st.selectbox("區域 / 區主管", [
-            "李政勳", "鄧思思", "林宥儒", "羅婉心", "王建樹", "楊茜聿",
-            "陳宥蓉", "吳岱侑", "翁聖閔", "黃啟周", "栗晉屏", "王瑞辰"
-        ])
-        dept_id = st.text_input("部門編號 (選填)")
-        emp_id = st.text_input("員工編號 (選填)")
-        emp_name = st.text_input("人員姓名 (選填)")
-        st.selectbox("查詢月份", [summary_month], index=0)
-        query = st.button("查詢")
+    except KeyError as e:
+        st.error(f"欄位錯誤：{e}。請確認試算表中的欄位名稱是否正確對應。")
+    except Exception as e:
+        st.error(f"發生錯誤：{str(e)}")
 
-    if query:
-        st.subheader("查詢結果")
-        df_filtered = filter_data(df_summary, df_eff, df_mgr, df_staff,
-                                  selected_manager, dept_id, emp_id, emp_name)
-        display_summary_table(df_filtered["summary"])
-        display_efficiency_table(df_filtered["eff"])
-        display_detail_tables(df_filtered["mgr"], df_filtered["staff"])
-        display_grade_distribution(df_grade)
+# 顯示考核月份
+with st.expander("目前資料月份"):
+    st.write(f"📅 {summary_month}")
 
-        st.markdown("※如對分數有疑問，請洽區主管/品牌經理說明。")
+# 顯示考核等級分布
+st.markdown("### 本次考核等級分布")
+st.dataframe(df_dist, use_container_width=True)
