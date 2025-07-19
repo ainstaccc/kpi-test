@@ -92,3 +92,4 @@ if st.button("🔎 查詢", type="primary"):
 
 if __name__ == "__main__":
     main()
+    
