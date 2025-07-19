@@ -29,4 +29,3 @@ streamlit run app.py
 
 - 本 App 為 Streamlit 類型
 - `runtime.txt` 指定 Python 版本為 3.10
-  
