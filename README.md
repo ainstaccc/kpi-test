@@ -1,27 +1,31 @@
-# 米斯特門市月考核查詢平台（Python Streamlit 版）
+# 米斯特 門市月考核查詢平台
 
-## 功能簡介
+📊 本專案為米斯特內部「門市月考核查詢系統」之 Streamlit App，支援多欄位查詢、考核分布展示、結果匯出等功能。
 
-此平台提供米斯特公司區主管查詢所屬部門及人員的月考核成績，分為三個主要區塊：
-- 考核總表（門店 考核總表）
-- 人效分析（人效分析）
-- 考核明細（主管／店員）
+## 🔧 使用說明
 
-## 功能模組
+### 1️⃣ 功能包含：
+- 區主管、部門編號、員工編號、人員姓名查詢
+- 本月考核等級分布（分頁：等級分布）
+- 四大資料顯示：
+  - 門店考核總表
+  - 人效分析
+  - 店長/副店 考核明細
+  - 店員/儲備 考核明細
+- 📥 匯出查詢結果（ZIP壓縮檔內含4張CSV）
 
-- 權限控管（限定登入 Gmail 帳號）
-- 多條件查詢（區主管、部門編號、員編、姓名）
-- 顯示查詢結果分區表格
-- 顯示考核等級分布
+### 2️⃣ 資料來源
+App 使用公開的 Google Sheet Excel 檔：
+[2025.06_MST-PA.xlsx](https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06_MST-PA.xlsx)
 
-## 執行方式
+## 🚀 如何執行
 
-1. 安裝套件
 ```bash
-pip install streamlit pandas openpyxl
-```
-
-2. 啟動應用程式
-```bash
+pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## 🛠 Hugging Face Space 部署須知
+
+- 本 App 為 Streamlit 類型
+- `runtime.txt` 指定 Python 版本為 3.10
