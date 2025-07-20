@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
+import zipfile
 
 FILE_URL = "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06_MST-PA.xlsx"
 
@@ -10,55 +12,119 @@ def load_data():
     df_eff = xls.parse("人效分析", header=1)
     df_mgr = xls.parse("店長副店 考核明細", header=1)
     df_staff = xls.parse("店員儲備 考核明細", header=1)
+    df_dist = xls.parse("等級分布", header=None, nrows=15, usecols="A:N")
     summary_month = xls.parse("門店 考核總表", nrows=1).columns[0]
-    return df_summary, df_eff, df_mgr, df_staff, summary_month
+    return df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month
 
-st.set_page_config(page_title="門市月考核查詢平台", layout="wide")
-st.title("🏪 米斯特門市月考核查詢平台")
-st.caption("版本：2025.07 | 維護者：@沛瑜")
+def format_eff(df):
+    if df.empty:
+        return df
+    df = df.copy()
+    for col in ["個績目標", "個績貢獻", "品牌 客單價", "個人 客單價"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').round(1)
+    for col in ["個績達成%", "客單 相對績效", "品牌 結帳會員率", "個人 結帳會員率", "會員 相對績效"]:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda x: f"{x}%" if pd.notnull(x) else x)
+    return df
 
-df_summary, df_eff, df_mgr, df_staff, summary_month = load_data()
+def main():
+    st.markdown("<h3>📊 米斯特 門市 工作績效月考核查詢系統</h3>", unsafe_allow_html=True)
 
-st.markdown("### 🔍 查詢條件")
+    df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month = load_data()
 
-col1, col2 = st.columns(2)
-with col1:
-    name_query = st.text_input("員工姓名")
-with col2:
-    code_query = st.text_input("員工編號")
+    with st.expander("🔍 查詢條件", expanded=True):
+        st.markdown("**🔺查詢條件任一欄即可，避免多重條件造成查詢錯誤。**")
+        col1, col2 = st.columns(2)
+        area = col1.selectbox("區域/區主管", options=[
+            "", "李政勳", "鄧思思", "林宥儒", "羅婉心", "王建樹", "楊茜聿", 
+            "陳宥蓉", "吳岱侑", "翁聖閔", "黃啟周", "栗晉屏", "王瑞辰"
+        ])
+        dept_code = col2.text_input("部門編號/門店編號")
+        emp_id = st.text_input("員工編號")
+        emp_name = st.text_input("人員姓名")
+        month = st.selectbox("查詢月份", options=["2025/06"])
 
-if st.button("🔎 查詢", type="primary"):
-    if not name_query and not code_query:
-        st.warning("請輸入員工姓名或編號")
-    else:
-        def match_condition(df):
-            return (
-                df["姓名"].astype(str).str.contains(name_query, na=False) if name_query else True
-            ) & (
-                df["員工編號"].astype(str).str.contains(code_query, na=False) if code_query else True
-            )
+    st.markdown(" <br><br>", unsafe_allow_html=True)
+    st.image("https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg", caption="2025/06 本月考核等級分布", use_container_width=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        mask_summary = match_condition(df_summary)
-        mask_eff = match_condition(df_eff)
-        mask_mgr = match_condition(df_mgr)
-        mask_staff = match_condition(df_staff)
+    if st.button("🔎 查詢", type="primary"):
+        st.subheader("📈 本月考核等級分布")
+        st.dataframe(df_dist, use_container_width=True)
 
-        st.divider()
-        st.subheader(f"📋 基本資料與總表（{summary_month}）")
-        st.dataframe(df_summary[mask_summary].head(5), use_container_width=True)
+        # Filter logic for summary
+        mask = pd.Series(True, index=df_summary.index)
+        if area:
+            mask &= df_summary["區主管"] == area
+        if dept_code:
+            mask &= df_summary["部門編號"] == dept_code
+        if emp_id:
+            mask &= df_summary["員編"].astype(str) == emp_id
+        if emp_name:
+            mask &= df_summary["人員姓名"].str.contains(emp_name)
 
-        st.subheader("📈 門店人效分析")
-        st.dataframe(df_eff[mask_eff].head(5), use_container_width=True)
+        df_result = df_summary[mask]
 
-        st.subheader("🧑‍💼 店長／副店長 考核明細")
-        st.dataframe(df_mgr[mask_mgr].head(5), use_container_width=True)
+        # 分開為其他表格建立遮罩
+        eff_mask = pd.Series(True, index=df_eff.index)
+        mgr_mask = pd.Series(True, index=df_mgr.index)
+        staff_mask = pd.Series(True, index=df_staff.index)
 
-        st.subheader("👕 店員／儲備 考核明細")
-        st.dataframe(df_staff[mask_staff].head(5), use_container_width=True)
+        if area:
+            eff_mask &= df_eff["區主管"] == area
+            mgr_mask &= df_mgr["區主管"] == area
+            staff_mask &= df_staff["區主管"] == area
+        if dept_code:
+            eff_mask &= df_eff["部門編號"] == dept_code
+            mgr_mask &= df_mgr["部門編號"] == dept_code
+            staff_mask &= df_staff["部門編號"] == dept_code
+        if emp_id:
+            eff_mask &= df_eff["員編"].astype(str) == emp_id
+            mgr_mask &= df_mgr["員編"].astype(str) == emp_id
+            staff_mask &= df_staff["員編"].astype(str) == emp_id
+        if emp_name:
+            eff_mask &= df_eff["人員姓名"].str.contains(emp_name)
+            mgr_mask &= df_mgr["人員姓名"].str.contains(emp_name)
+            staff_mask &= df_staff["人員姓名"].str.contains(emp_name)
 
-        st.divider()
-        st.image(
-            "https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg",
-            caption="2025/06 本月考核等級分布",
-            use_column_width=True
+        df_eff_result = df_eff[eff_mask]
+        df_mgr_result = df_mgr[mgr_mask]
+        df_staff_result = df_staff[staff_mask]
+
+        st.markdown("## 🧾 門店考核總表")
+        st.markdown(f"共查得：{len(df_result)} 筆")
+        st.dataframe(df_result, use_container_width=True)
+
+        st.markdown("## 👥 人效分析")
+        df_eff_result_fmt = format_eff(df_eff_result)
+        st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
+        st.dataframe(df_eff_result_fmt, use_container_width=True)
+
+        st.markdown("## 👔 店長/副店 考核明細")
+        st.markdown(f"共查得：{len(df_mgr_result)} 筆")
+        st.dataframe(df_mgr_result if not df_mgr_result.empty else df_mgr.head(0), use_container_width=True)
+
+        st.markdown("## 👟 店員/儲備 考核明細")
+        st.markdown(f"共查得：{len(df_staff_result)} 筆")
+        st.dataframe(df_staff_result if not df_staff_result.empty else df_staff.head(0), use_container_width=True)
+
+        # 匯出結果按鈕
+        export_zip = BytesIO()
+        with zipfile.ZipFile(export_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("門店考核總表.csv", df_result.to_csv(index=False, encoding="utf-8-sig"))
+            zf.writestr("人效分析.csv", df_eff_result.to_csv(index=False, encoding="utf-8-sig"))
+            zf.writestr("店長副店 考核明細.csv", df_mgr_result.to_csv(index=False, encoding="utf-8-sig"))
+            zf.writestr("店員儲備 考核明細.csv", df_staff_result.to_csv(index=False, encoding="utf-8-sig"))
+
+        st.download_button(
+            label="📥 匯出查詢結果（Excel ZIP）",
+            data=export_zip.getvalue(),
+            file_name="查詢結果.zip",
+            mime="application/zip"
         )
+
+        st.markdown("<p style='color:red;font-weight:bold;font-size:16px;'>※如對分數有疑問，請洽區主管/品牌經理說明。</p>", unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
