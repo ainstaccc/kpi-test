@@ -56,10 +56,6 @@ def main():
             mask &= df_summary["區主管"] == area
         if dept_code:
             mask &= df_summary["部門編號"] == dept_code
-        if emp_id:
-            mask &= df_summary["員編"].astype(str) == emp_id
-        if emp_name:
-            mask &= df_summary["人員姓名"].str.contains(emp_name)
 
         df_result = df_summary[mask]
 
@@ -76,14 +72,6 @@ def main():
             eff_mask &= df_eff["部門編號"] == dept_code
             mgr_mask &= df_mgr["部門編號"] == dept_code
             staff_mask &= df_staff["部門編號"] == dept_code
-        if emp_id:
-            eff_mask &= df_eff["員編"].astype(str) == emp_id
-            mgr_mask &= df_mgr["員編"].astype(str) == emp_id
-            staff_mask &= df_staff["員編"].astype(str) == emp_id
-        if emp_name:
-            eff_mask &= df_eff["人員姓名"].str.contains(emp_name)
-            mgr_mask &= df_mgr["人員姓名"].str.contains(emp_name)
-            staff_mask &= df_staff["人員姓名"].str.contains(emp_name)
 
         df_eff_result = df_eff[eff_mask]
         df_mgr_result = df_mgr[mgr_mask]
