@@ -40,6 +40,7 @@ def format_eff(df):
     return df
 
 
+
 def main():
     st.markdown("<h3>📊 米斯特 門市 工作績效月考核查詢系統</h3>", unsafe_allow_html=True)
 
@@ -93,34 +94,35 @@ def main():
         st.markdown(f"共查得：{len(df_result)} 筆")
         st.dataframe(df_result.iloc[:, 2:11], use_container_width=True)
 
-        st.markdown("## 👥 人效分析")
-        df_eff_result_fmt = format_eff(df_eff_result)
-        
-        if not df_eff_result_fmt.empty:
-            # 動態建立格式字典
-            columns = df_eff_result_fmt.columns
-            format_dict = {}
-        
-            int_cols = ["個績目標", "個績貢獻", "品牌 客單價", "個人 客單價"]
-            percent_cols = ["個績達成%", "客單 相對績效", "品牌 結帳會員率", "個人 結帳會員率", "會員 相對績效"]
-        
-            for col in int_cols:
-                if col in columns:
-                    format_dict[col] = "{:,.0f}"
-            for col in percent_cols:
-                if col in columns:
-                    format_dict[col] = "{:.0%}"
-            if "員編" in columns:
-                format_dict["員編"] = "{:08.0f}"
-        
-            try:
-                st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
-                st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
-            except Exception as e:
-                st.warning("⚠️ 人效資料格式化失敗，將顯示原始資料")
-                st.dataframe(df_eff_result_fmt, use_container_width=True)
-        else:
-            st.markdown("⚠️ 查無人效資料")
+st.markdown("## 👥 人效分析")
+df_eff_result_fmt = format_eff(df_eff_result)
+
+if not df_eff_result_fmt.empty:
+    # 動態建立格式字典
+    columns = df_eff_result_fmt.columns
+    format_dict = {}
+
+    int_cols = ["個績目標", "個績貢獻", "品牌 客單價", "個人 客單價"]
+    percent_cols = ["個績達成%", "客單 相對績效", "品牌 結帳會員率", "個人 結帳會員率", "會員 相對績效"]
+
+    for col in int_cols:
+        if col in columns:
+            format_dict[col] = "{:,.0f}"
+    for col in percent_cols:
+        if col in columns:
+            format_dict[col] = "{:.0%}"
+    if "員編" in columns:
+        format_dict["員編"] = "{:08.0f}"
+
+    try:
+        st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
+        st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+    except Exception as e:
+        st.warning("⚠️ 人效資料格式化失敗，將顯示原始資料")
+        st.dataframe(df_eff_result_fmt, use_container_width=True)
+else:
+    st.markdown("⚠️ 查無人效資料")
+
 
 
 
