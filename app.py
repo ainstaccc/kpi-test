@@ -100,19 +100,20 @@ def main():
         # 取得所有欄位名稱
         columns = df_eff_result_fmt.columns
         
-        # 格式設定
-        # 第7-8欄（index 6,7）與第10-11欄（index 9,10）：整數＋千分位
+        # 整數欄（千分位）
         int_columns = [columns[6], columns[7], columns[9], columns[10]]
-        # 第12-15欄（index 11~14）：百分比格式
+        # 百分比欄
         percent_columns = columns[11:15]
         
         # 建立格式化字典
         format_dict = {col: "{:,.0f}" for col in int_columns}
         format_dict.update({col: "{:.0%}" for col in percent_columns})
+        format_dict[columns[3]] = "{:08.0f}"  # 員編顯示為8位整數
         
-        # 顯示資料表
+        # 顯示
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
         st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+
 
 
 
