@@ -150,20 +150,31 @@ def main():
         st.dataframe(df_staff_display if not df_staff_display.empty else df_staff_head_display, use_container_width=True)
 
 
-        # 匯出結果按鈕
-        export_zip = BytesIO()
-        with zipfile.ZipFile(export_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr("門店考核總表.csv", df_result.to_csv(index=False, encoding="utf-8-sig"))
-            zf.writestr("人效分析.csv", df_eff_result.to_csv(index=False, encoding="utf-8-sig"))
-            zf.writestr("店長副店 考核明細.csv", df_mgr_result.to_csv(index=False, encoding="utf-8-sig"))
-            zf.writestr("店員儲備 考核明細.csv", df_staff_result.to_csv(index=False, encoding="utf-8-sig"))
-
+        from io import BytesIO
+        import xlsxwriter
+        
+        # 建立一個 BytesIO 物件來儲存 Excel 檔案
+        output_excel = BytesIO()
+        
+        # 寫入 Excel，使用 xlsxwriter 引擎建立 4 個分頁
+        with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
+            df_result.to_excel(writer, sheet_name="門店考核總表", index=False)
+            df_eff_result.to_excel(writer, sheet_name="人效分析", index=False)
+            df_mgr_result.to_excel(writer, sheet_name="店長副店 考核明細", index=False)
+            df_staff_result.to_excel(writer, sheet_name="店員儲備 考核明細", index=False)
+            writer.save()
+        
+        # 重設指標位置，讓檔案可以被讀取
+        output_excel.seek(0)
+        
+        # 建立下載按鈕
         st.download_button(
-            label="📥 匯出查詢結果（Excel ZIP）",
-            data=export_zip.getvalue(),
-            file_name="查詢結果.zip",
-            mime="application/zip"
+            label="📥 匯出查詢結果（Excel）",
+            data=output_excel,
+            file_name="查詢結果.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
 
 
         st.markdown("<p style='color:red;font-weight:bold;font-size:16px;'>※如對分數有疑問，請洽區主管/品牌經理說明。</p>", unsafe_allow_html=True)
