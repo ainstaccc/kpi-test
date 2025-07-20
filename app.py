@@ -97,20 +97,19 @@ def main():
         st.markdown("## 👥 人效分析")
         df_eff_result_fmt = format_eff(df_eff_result)
         
-        # 第7-8欄, 第10-11欄 → 千分位整數
-        int_columns = df_eff_result_fmt.columns[[6, 7, 9, 10]]
-        # 第12-15欄 → 百分比格式
-        percent_columns = df_eff_result_fmt.columns[11:15]
+        # 取得所有欄位名稱
+        columns = df_eff_result_fmt.columns
+        
+        # 指定格式化欄位（排除第2–6, 9欄）
+        int_columns = [columns[6], columns[7], columns[10], columns[11]]   # 第7-8,10-11欄
+        percent_columns = columns[11+1 : 15]  # 第12–15欄
         
         # 建立格式化字典
         format_dict = {col: "{:,.0f}" for col in int_columns}
-        format_dict.update({col: "{:.1%}" for col in percent_columns})
+        format_dict.update({col: "{:.0%}" for col in percent_columns})
         
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
         st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
-
-
-
 
 
         st.markdown("## 👔 店長/副店 考核明細")
