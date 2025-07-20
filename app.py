@@ -150,30 +150,23 @@ def main():
         st.dataframe(df_staff_display if not df_staff_display.empty else df_staff_head_display, use_container_width=True)
 
 
-        from io import BytesIO
-        import xlsxwriter
-        
-        # 建立一個 BytesIO 物件來儲存 Excel 檔案
+        # 匯出結果為單一 Excel 檔（含四個分頁）
         output_excel = BytesIO()
-        
-        # 寫入 Excel，使用 xlsxwriter 引擎建立 4 個分頁
         with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
             df_result.to_excel(writer, sheet_name="門店考核總表", index=False)
             df_eff_result.to_excel(writer, sheet_name="人效分析", index=False)
             df_mgr_result.to_excel(writer, sheet_name="店長副店 考核明細", index=False)
             df_staff_result.to_excel(writer, sheet_name="店員儲備 考核明細", index=False)
             writer.save()
-        
-        # 重設指標位置，讓檔案可以被讀取
         output_excel.seek(0)
         
-        # 建立下載按鈕
         st.download_button(
             label="📥 匯出查詢結果（Excel）",
             data=output_excel,
             file_name="查詢結果.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+        
 
 
 
