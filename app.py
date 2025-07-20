@@ -153,11 +153,27 @@ def main():
         # 匯出結果為單一 Excel 檔（含四個分頁）
         output_excel = BytesIO()
         with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
-            df_result.to_excel(writer, sheet_name="門店考核總表", index=False)
-            df_eff_result.to_excel(writer, sheet_name="人效分析", index=False)
-            df_mgr_result.to_excel(writer, sheet_name="店長副店 考核明細", index=False)
-            df_staff_result.to_excel(writer, sheet_name="店員儲備 考核明細", index=False)
-
+            # 🧾 門店考核總表：第 2~10 欄
+            df_result.iloc[:, 2:11].to_excel(writer, sheet_name="門店考核總表", index=False)
+        
+            # 👥 人效分析：格式化後的表
+            df_eff_result_fmt = format_eff(df_eff_result)
+            df_eff_result_fmt.to_excel(writer, sheet_name="人效分析", index=False)
+        
+            # 👔 店長/副店 考核明細：第2~7欄 + 第12~28欄
+            df_mgr_display = pd.concat([
+                df_mgr_result.iloc[:, 1:7],
+                df_mgr_result.iloc[:, 11:28]
+            ], axis=1)
+            df_mgr_display.to_excel(writer, sheet_name="店長副店 考核明細", index=False)
+        
+            # 👟 店員/儲備 考核明細：第2~7欄 + 第12~28欄
+            df_staff_display = pd.concat([
+                df_staff_result.iloc[:, 1:7],
+                df_staff_result.iloc[:, 11:28]
+            ], axis=1)
+            df_staff_display.to_excel(writer, sheet_name="店員儲備 考核明細", index=False)
+        
         output_excel.seek(0)
         
         st.download_button(
@@ -166,7 +182,6 @@ def main():
             file_name="查詢結果.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        
 
 
 
