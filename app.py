@@ -92,7 +92,7 @@ def main():
 
         st.markdown("## 🧾 門店考核總表")
         st.markdown(f"共查得：{len(df_result)} 筆")
-        st.dataframe(df_result, use_container_width=True)
+        st.dataframe(df_result.iloc[:, 2:11], use_container_width=True)
 
         st.markdown("## 👥 人效分析")
         df_eff_result_fmt = format_eff(df_eff_result)
