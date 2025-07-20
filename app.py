@@ -41,8 +41,7 @@ def main():
             "陳宥蓉", "吳岱侑", "翁聖閔", "黃啟周", "栗晉屏", "王瑞辰"
         ])
         dept_code = col2.text_input("部門編號/門店編號")
-        emp_id = st.text_input("員工編號")
-        emp_name = st.text_input("人員姓名")
+
         month = st.selectbox("查詢月份", options=["2025/06"])
 
     st.markdown(" <br><br>", unsafe_allow_html=True)
@@ -57,10 +56,7 @@ def main():
             mask &= df_summary["區主管"] == area
         if dept_code:
             mask &= df_summary["部門編號"] == dept_code
-        if emp_id:
-            mask &= df_summary["員編"].astype(str) == emp_id
-        if emp_name:
-            mask &= df_summary["人員姓名"].str.contains(emp_name)
+
 
         df_result = df_summary[mask]
 
@@ -77,14 +73,7 @@ def main():
             eff_mask &= df_eff["部門編號"] == dept_code
             mgr_mask &= df_mgr["部門編號"] == dept_code
             staff_mask &= df_staff["部門編號"] == dept_code
-        if emp_id:
-            eff_mask &= df_eff["員編"].astype(str) == emp_id
-            mgr_mask &= df_mgr["員編"].astype(str) == emp_id
-            staff_mask &= df_staff["員編"].astype(str) == emp_id
-        if emp_name:
-            eff_mask &= df_eff["人員姓名"].str.contains(emp_name)
-            mgr_mask &= df_mgr["人員姓名"].str.contains(emp_name)
-            staff_mask &= df_staff["人員姓名"].str.contains(emp_name)
+
 
         df_eff_result = df_eff[eff_mask]
         df_mgr_result = df_mgr[mgr_mask]
