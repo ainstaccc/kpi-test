@@ -6,27 +6,39 @@ import zipfile
 FILE_URL = "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06_MST-PA.xlsx"
 
 @st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600)
 def load_data():
+    na_vals = ["#VALUE!", "#DIV/0!", "N/A", "⚠ 無出勤資料"]
     xls = pd.ExcelFile(FILE_URL, engine="openpyxl")
-    df_summary = xls.parse("門店 考核總表", header=1)
-    df_eff = xls.parse("人效分析", header=1)
-    df_mgr = xls.parse("店長副店 考核明細", header=1)
-    df_staff = xls.parse("店員儲備 考核明細", header=1)
-    df_dist = xls.parse("等級分布", header=None, nrows=15, usecols="A:N")
+
+    df_summary = xls.parse("門店 考核總表", header=1, na_values=na_vals)
+    df_eff = xls.parse("人效分析", header=1, na_values=na_vals)
+    df_mgr = xls.parse("店長副店 考核明細", header=1, na_values=na_vals)
+    df_staff = xls.parse("店員儲備 考核明細", header=1, na_values=na_vals)
+    df_dist = xls.parse("等級分布", header=None, nrows=15, usecols="A:N", na_values=na_vals)
     summary_month = xls.parse("門店 考核總表", nrows=1).columns[0]
+
     return df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month
 
 def format_eff(df):
     if df.empty:
         return df
     df = df.copy()
-    for col in ["個績目標", "個績貢獻", "品牌 客單價", "個人 客單價"]:
+
+    int_columns = ["個績目標", "個績貢獻", "品牌 客單價", "個人 客單價"]
+    percent_columns = ["個績達成%", "客單 相對績效", "品牌 結帳會員率", "個人 結帳會員率", "會員 相對績效"]
+
+    for col in int_columns:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce').round(1)
-    for col in ["個績達成%", "客單 相對績效", "品牌 結帳會員率", "個人 結帳會員率", "會員 相對績效"]:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).round(1)
+
+    for col in percent_columns:
         if col in df.columns:
-            df[col] = df[col].apply(lambda x: f"{x}%" if pd.notnull(x) else x)
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+            df[col] = df[col].apply(lambda x: f"{x:.0%}")
+
     return df
+
 
 def main():
     st.markdown("<h3>📊 米斯特 門市 工作績效月考核查詢系統</h3>", unsafe_allow_html=True)
@@ -84,22 +96,32 @@ def main():
         st.markdown("## 👥 人效分析")
         df_eff_result_fmt = format_eff(df_eff_result)
         
-        # 取得所有欄位名稱
-        columns = df_eff_result_fmt.columns
+        if not df_eff_result_fmt.empty:
+            # 動態建立格式字典
+            columns = df_eff_result_fmt.columns
+            format_dict = {}
         
-        # 整數欄（千分位）
-        int_columns = [columns[6], columns[7], columns[9], columns[10]]
-        # 百分比欄
-        percent_columns = columns[11:15]
+            int_cols = ["個績目標", "個績貢獻", "品牌 客單價", "個人 客單價"]
+            percent_cols = ["個績達成%", "客單 相對績效", "品牌 結帳會員率", "個人 結帳會員率", "會員 相對績效"]
         
-        # 建立格式化字典
-        format_dict = {col: "{:,.0f}" for col in int_columns}
-        format_dict.update({col: "{:.0%}" for col in percent_columns})
-        format_dict[columns[3]] = "{:08.0f}"  # 員編顯示為8位整數
+            for col in int_cols:
+                if col in columns:
+                    format_dict[col] = "{:,.0f}"
+            for col in percent_cols:
+                if col in columns:
+                    format_dict[col] = "{:.0%}"
+            if "員編" in columns:
+                format_dict["員編"] = "{:08.0f}"
         
-        # 顯示
-        st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
-        st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+            try:
+                st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
+                st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+            except Exception as e:
+                st.warning("⚠️ 人效資料格式化失敗，將顯示原始資料")
+                st.dataframe(df_eff_result_fmt, use_container_width=True)
+        else:
+            st.markdown("⚠️ 查無人效資料")
+
 
 
 
