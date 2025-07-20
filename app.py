@@ -96,8 +96,16 @@ def main():
 
         st.markdown("## 👥 人效分析")
         df_eff_result_fmt = format_eff(df_eff_result)
+
+        # 將第9欄、第12~15欄設為百分比格式
+        percent_columns_idx = [8, 11, 12, 13, 14]  # 0-based index
+        percent_columns = [df_eff_result_fmt.columns[i] for i in percent_columns_idx if i < len(df_eff_result_fmt.columns)]
+
+        format_dict = {col: "{:.0%}" for col in percent_columns}
+
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
-        st.dataframe(df_eff_result_fmt, use_container_width=True)
+        st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+
 
 
         st.markdown("## 👔 店長/副店 考核明細")
