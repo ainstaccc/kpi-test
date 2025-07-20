@@ -9,12 +9,13 @@ FILE_URL = "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06
 def load_data():
     xls = pd.ExcelFile(FILE_URL, engine="openpyxl")
     df_summary = xls.parse("門店 考核總表", header=1)
-    df_eff = xls.parse("人效分析", header=1)
+    df_eff = xls.parse("人效分析", header=1)  # 不指定 na_values，保留原始錯誤文字
     df_mgr = xls.parse("店長副店 考核明細", header=1)
     df_staff = xls.parse("店員儲備 考核明細", header=1)
     df_dist = xls.parse("等級分布", header=None, nrows=15, usecols="A:N")
     summary_month = xls.parse("門店 考核總表", nrows=1).columns[0]
     return df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month
+
 
 def format_eff(df):
     if df.empty:
