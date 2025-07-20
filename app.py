@@ -102,7 +102,12 @@ def main():
         
         # 顯示
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
-        st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+        try:
+            st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+        except Exception as e:
+            st.warning(f"⚠️ 資料格式化失敗，原因：{e}，將改以原始資料顯示")
+            st.dataframe(df_eff_result_fmt, use_container_width=True)
+
 
 
 
