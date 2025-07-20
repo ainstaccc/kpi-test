@@ -99,11 +99,15 @@ def main():
 
         # 轉換第9欄、第12~15欄為百分比格式字串（0-based index）
         percent_columns_idx = [8, 11, 12, 13, 14]
+        
         for idx in percent_columns_idx:
             if idx < len(df_eff_result_fmt.columns):
                 col = df_eff_result_fmt.columns[idx]
-                df_eff_result_fmt[col] = df_eff_result_fmt[col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+                df_eff_result_fmt[col] = df_eff_result_fmt[col].apply(
+                    lambda x: f"{x:.0%}" if isinstance(x, (int, float)) and pd.notna(x) else ""
+                )
         
+                
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
         st.dataframe(df_eff_result_fmt, use_container_width=True)
 
