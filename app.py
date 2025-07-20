@@ -41,8 +41,7 @@ def main():
             "陳宥蓉", "吳岱侑", "翁聖閔", "黃啟周", "栗晉屏", "王瑞辰"
         ])
         dept_code = col2.text_input("部門編號/門店編號")
-        emp_id = st.text_input("員工編號")
-        emp_name = st.text_input("人員姓名")
+
         month = st.selectbox("查詢月份", options=["2025/06"])
 
     st.markdown(" <br><br>", unsafe_allow_html=True)
