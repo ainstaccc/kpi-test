@@ -99,13 +99,38 @@ def main():
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
         st.dataframe(df_eff_result_fmt, use_container_width=True)
 
+
         st.markdown("## 👔 店長/副店 考核明細")
         st.markdown(f"共查得：{len(df_mgr_result)} 筆")
-        st.dataframe(df_mgr_result if not df_mgr_result.empty else df_mgr.head(0), use_container_width=True)
+
+        # 只顯示第2～7欄與第12～28欄
+        df_mgr_display = pd.concat([
+            df_mgr_result.iloc[:, 1:7],    # 第2~7欄
+            df_mgr_result.iloc[:, 11:28]   # 第12~28欄
+        ], axis=1)
+
+        df_mgr_head_display = pd.concat([
+            df_mgr.iloc[:, 1:7], 
+            df_mgr.iloc[:, 11:28]
+        ], axis=1).head(0)
+
+        st.dataframe(df_mgr_display if not df_mgr_display.empty else df_mgr_head_display, use_container_width=True)
 
         st.markdown("## 👟 店員/儲備 考核明細")
-        st.markdown(f"共查得：{len(df_staff_result)} 筆")
-        st.dataframe(df_staff_result if not df_staff_result.empty else df_staff.head(0), use_container_width=True)
+        st.markdown(f"共查得：{len(df_mgr_result)} 筆")
+
+        # 只顯示第2～7欄與第12～28欄
+        df_mgr_display = pd.concat([
+            df_mgr_result.iloc[:, 1:7],    # 第2~7欄
+            df_mgr_result.iloc[:, 11:28]   # 第12~28欄
+        ], axis=1)
+
+        df_mgr_head_display = pd.concat([
+            df_mgr.iloc[:, 1:7], 
+            df_mgr.iloc[:, 11:28]
+        ], axis=1).head(0)
+
+        st.dataframe(df_mgr_display if not df_mgr_display.empty else df_mgr_head_display, use_container_width=True)
 
         # 匯出結果按鈕
         export_zip = BytesIO()
