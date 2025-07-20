@@ -157,7 +157,7 @@ def main():
             df_eff_result.to_excel(writer, sheet_name="人效分析", index=False)
             df_mgr_result.to_excel(writer, sheet_name="店長副店 考核明細", index=False)
             df_staff_result.to_excel(writer, sheet_name="店員儲備 考核明細", index=False)
-            writer.save()
+
         output_excel.seek(0)
         
         st.download_button(
