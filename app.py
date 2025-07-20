@@ -14,36 +14,39 @@ def load_data():
     summary_month = xls.parse("門店 考核總表", nrows=1).columns[0]
     return df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month
 
+st.set_page_config(page_title="米斯特 KPI 查詢平台", layout="wide")
+st.markdown("<style>.block-container{padding-top:1rem;}</style>", unsafe_allow_html=True)
+
 df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month = load_data()
 
-st.set_page_config(page_title="米斯特門市月考核查詢平台", layout="wide")
-st.markdown("<style>.big-font { font-size:28px !important; }</style>", unsafe_allow_html=True)
+st.title("📋 本月考核等級分布")
+st.image("https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/dist.png", caption=f"{summary_month} 本月考核等級分布")
 
-st.image("https://github.com/ainstaccc/kpi-checker/raw/main/banner.png", use_column_width=True)
+# 錯誤處理用 Try 包住 dataframe 顯示
+try:
+    st.dataframe(df_dist, use_container_width=True)
+except Exception as e:
+    st.error("資料表載入失敗，請稍後再試")
+    st.code(str(e))
 
-st.markdown(f"<div class='big-font'>📊 {summary_month} 本月考核等級分布</div>", unsafe_allow_html=True)
-st.dataframe(df_dist, use_container_width=True)
-
-st.markdown("## 🔍 本月考核等級分布")
-with st.form("query-form"):
-    col1, col2, col3 = st.columns(3)
+st.markdown("## 🔍 查詢")
+with st.form("search_form"):
+    col1, col2 = st.columns(2)
     with col1:
-        name = st.text_input("姓名")
+        staff_id = st.text_input("輸入員工編號")
     with col2:
-        emp_id = st.text_input("工號")
-    with col3:
-        store = st.text_input("門店")
+        check_month = st.selectbox("選擇查詢月份", options=[summary_month])
+    submitted = st.form_submit_button("🔎 查詢", type="primary")
 
-    if st.form_submit_button("🔎 查詢", type="primary"):
-        result_df = df_mgr[df_mgr["姓名"].astype(str).str.contains(name, na=False)] \
-                    if name else df_mgr
-        result_df = result_df[result_df["工號"].astype(str).str.contains(emp_id, na=False)] \
-                    if emp_id else result_df
-        result_df = result_df[result_df["門店"].astype(str).str.contains(store, na=False)] \
-                    if store else result_df
+    if submitted:
+        result_mgr = df_mgr[df_mgr["員工編號"] == staff_id]
+        result_staff = df_staff[df_staff["員工編號"] == staff_id]
 
-        st.markdown("### 查詢結果")
-        if not result_df.empty:
-            st.dataframe(result_df.head(20), use_container_width=True)
+        if not result_mgr.empty:
+            st.success("查詢結果 - 店長／副店長")
+            st.dataframe(result_mgr, use_container_width=True)
+        elif not result_staff.empty:
+            st.success("查詢結果 - 店員／儲備幹部")
+            st.dataframe(result_staff, use_container_width=True)
         else:
-            st.warning("查無符合條件的資料，請重新輸入查詢條件。")
+            st.warning("⚠️ 查無此員工帳號，請確認員編是否正確。")
