@@ -36,19 +36,12 @@ def main():
 
     with st.expander("🔍 查詢條件", expanded=True):
         st.markdown("**🔺查詢條件任一欄即可，避免多重條件造成查詢錯誤。**")
-        
         col1, col2 = st.columns(2)
-        
-        # 區域/區主管：可複選
-        area_options = df_summary["區主管"].dropna().unique().tolist()
-        areas_selected = col1.multiselect("區域/區主管（可複選）", options=area_options)
-        
-        # 部門選單（格式為 "AM001 - 高雄夢時代"）
-        dept_options = df_summary.dropna(subset=["部門編號", "部門名稱"])
-        dept_options = dept_options[["部門編號", "部門名稱"]].drop_duplicates()
-        dept_options["顯示"] = dept_options["部門編號"] + " - " + dept_options["部門名稱"]
-        depts_selected = col2.multiselect("部門編號/門店名稱（可複選）", options=dept_options["顯示"].tolist())
-
+        area = col1.selectbox("區域/區主管", options=[
+            "", "李政勳", "鄧思思", "林宥儒", "羅婉心", "王建樹", "楊茜聿", 
+            "陳宥蓉", "吳岱侑", "翁聖閔", "黃啓周", "栗晉屏", "王瑞辰"
+        ])
+        dept_code = col2.text_input("部門編號/門店編號")
 
         month = st.selectbox("查詢月份", options=["2025/06"])
 
@@ -152,7 +145,60 @@ def main():
         st.dataframe(df_staff_display if not df_staff_display.empty else df_staff_head_display, use_container_width=True)
 
 
+        # 匯出結果為單一 Excel 檔（含四個分頁）
+        output_excel = BytesIO()
+        with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
+            # 🧾 門店考核總表：第 2~10 欄
+            df_result.iloc[:, 2:11].to_excel(writer, sheet_name="門店考核總表", index=False)
+        
+            # 👥 人效分析：格式化後的表
+            df_eff_result_fmt = format_eff(df_eff_result)
+            df_eff_result_fmt.to_excel(writer, sheet_name="人效分析", index=False)
+        
+            # 👔 店長/副店 考核明細：第2~7欄 + 第12~28欄
+            df_mgr_display = pd.concat([
+                df_mgr_result.iloc[:, 1:7],
+                df_mgr_result.iloc[:, 11:28]
+            ], axis=1)
+            df_mgr_display.to_excel(writer, sheet_name="店長副店 考核明細", index=False)
+        
+            # 👟 店員/儲備 考核明細：第2~7欄 + 第12~28欄
+            df_staff_display = pd.concat([
+                df_staff_result.iloc[:, 1:7],
+                df_staff_result.iloc[:, 11:28]
+            ], axis=1)
+            df_staff_display.to_excel(writer, sheet_name="店員儲備 考核明細", index=False)
+        
+        output_excel.seek(0)
+        
+        st.download_button(
+            label="📥 匯出查詢結果（Excel）",
+            data=output_excel,
+            file_name="查詢結果.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+
+
+                st.markdown("## 👟 店員/儲備 考核明細")
+        st.markdown(f"共查得：{len(df_staff_result)} 筆")
+
+        df_staff_display = pd.concat([
+            df_staff_result.iloc[:, 1:7],
+            df_staff_result.iloc[:, 11:28]
+        ], axis=1)
+
+        df_staff_head_display = pd.concat([
+            df_staff.iloc[:, 1:7], 
+            df_staff.iloc[:, 11:28]
+        ], axis=1).head(0)
+
+        st.dataframe(df_staff_display if not df_staff_display.empty else df_staff_head_display, use_container_width=True)
+
+        # 🔻（這裡是原本的匯出程式碼位置，已刪除）
+
         st.markdown("<p style='color:red;font-weight:bold;font-size:16px;'>※如對分數有疑問，請洽區主管/品牌經理說明。</p>", unsafe_allow_html=True)
+
 
 if __name__ == "__main__":
     main()
