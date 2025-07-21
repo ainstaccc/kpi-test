@@ -46,10 +46,6 @@ def main():
         month = st.selectbox("查詢月份", options=["2025/06"])
 
     st.markdown("<br><br>", unsafe_allow_html=True)
-    
-
-
-
 
 
     if st.button("🔎 查詢", type="primary"):
@@ -82,6 +78,12 @@ def main():
         df_eff_result = df_eff[eff_mask]
         df_mgr_result = df_mgr[mgr_mask]
         df_staff_result = df_staff[staff_mask]
+
+
+        # 插入圖片顯示（考核等級分布）
+        st.markdown("### 🧭 2025.06 考核等級分布")
+        st.image("https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06_grade.jpg", use_column_width=True)
+        
 
         
         st.markdown("## 🧾 門店考核總表")
