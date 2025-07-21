@@ -83,13 +83,6 @@ def main():
         df_mgr_result = df_mgr[mgr_mask]
         df_staff_result = df_staff[staff_mask]
 
-        # ▼▼ 插入圖片（查詢按鈕下方） ▼▼
-        st.image(
-            "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06%20考核等級分布.jpg",
-            caption="2025/06 📈 本月考核等級分布",
-            use_container_width=True
-        )
-
         
         st.markdown("## 🧾 門店考核總表")
         st.markdown(f"共查得：{len(df_result)} 筆")
