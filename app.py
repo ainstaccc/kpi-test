@@ -36,12 +36,19 @@ def main():
 
     with st.expander("🔍 查詢條件", expanded=True):
         st.markdown("**🔺查詢條件任一欄即可，避免多重條件造成查詢錯誤。**")
+        
         col1, col2 = st.columns(2)
-        area = col1.selectbox("區域/區主管", options=[
-            "", "李政勳", "鄧思思", "林宥儒", "羅婉心", "王建樹", "楊茜聿", 
-            "陳宥蓉", "吳岱侑", "翁聖閔", "黃啓周", "栗晉屏", "王瑞辰"
-        ])
-        dept_code = col2.text_input("部門編號/門店編號")
+        
+        # 區域/區主管：可複選
+        area_options = df_summary["區主管"].dropna().unique().tolist()
+        areas_selected = col1.multiselect("區域/區主管（可複選）", options=area_options)
+        
+        # 部門選單（格式為 "AM001 - 高雄夢時代"）
+        dept_options = df_summary.dropna(subset=["部門編號", "部門名稱"])
+        dept_options = dept_options[["部門編號", "部門名稱"]].drop_duplicates()
+        dept_options["顯示"] = dept_options["部門編號"] + " - " + dept_options["部門名稱"]
+        depts_selected = col2.multiselect("部門編號/門店名稱（可複選）", options=dept_options["顯示"].tolist())
+
 
         month = st.selectbox("查詢月份", options=["2025/06"])
 
