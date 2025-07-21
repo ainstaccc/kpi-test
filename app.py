@@ -50,6 +50,19 @@ def main():
     # ✅ 正確的圖片載入方式
 
 
+    if st.button("🔍 查詢", use_container_width=True):
+        # 查詢處理邏輯…
+        st.session_state["filtered"] = True
+    
+        # ▼▼ 插入圖片（查詢按鈕下方） ▼▼
+        st.image(
+            "https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg",
+            caption="2025/06 📈 本月考核等級分布",
+            use_container_width=True
+        )
+
+
+
     if st.button("🔎 查詢", type="primary"):
         # ✅ 查詢邏輯正式啟動（請將下方所有邏輯內縮）
         # Filter logic for summary
