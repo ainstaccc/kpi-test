@@ -180,25 +180,7 @@ def main():
 
 
 
-                st.markdown("## 👟 店員/儲備 考核明細")
-        st.markdown(f"共查得：{len(df_staff_result)} 筆")
-
-        df_staff_display = pd.concat([
-            df_staff_result.iloc[:, 1:7],
-            df_staff_result.iloc[:, 11:28]
-        ], axis=1)
-
-        df_staff_head_display = pd.concat([
-            df_staff.iloc[:, 1:7], 
-            df_staff.iloc[:, 11:28]
-        ], axis=1).head(0)
-
-        st.dataframe(df_staff_display if not df_staff_display.empty else df_staff_head_display, use_container_width=True)
-
-        # 🔻（這裡是原本的匯出程式碼位置，已刪除）
-
         st.markdown("<p style='color:red;font-weight:bold;font-size:16px;'>※如對分數有疑問，請洽區主管/品牌經理說明。</p>", unsafe_allow_html=True)
-
 
 if __name__ == "__main__":
     main()
