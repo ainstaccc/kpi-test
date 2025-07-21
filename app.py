@@ -54,7 +54,6 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 if st.button("🔎 查詢", type="primary"):
     # 查詢邏輯放這裡
-    Pass
 
         # Filter logic for summary
         mask = pd.Series(True, index=df_summary.index)
