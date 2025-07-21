@@ -50,35 +50,20 @@ def main():
     # ✅ 正確的圖片載入方式
 
 
-    if st.button("🔍 查詢", use_container_width=True):
-        # 查詢處理邏輯…
-        st.session_state["filtered"] = True
+    if st.button("🔍 查詢", type="primary"):
+        # ✅ 查詢邏輯正式啟動（清除下方所有畫面內容）
     
-        # ▼▼ 插入圖片（查詢按鈕下方） ▼▼
+        # ▼ 插入圖片（查詢按鈕下方）
         st.image(
             "https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg",
             caption="2025/06 📈 本月考核等級分布",
             use_container_width=True
         )
-
-
-
-    if st.button("🔎 查詢", type="primary"):
-        # ✅ 查詢邏輯正式啟動（請將下方所有邏輯內縮）
-        # Filter logic for summary
+    
+        # 🧠 Filter logic for summary
         mask = pd.Series(True, index=df_summary.index)
-        if area:
-            mask &= df_summary["區主管"] == area
-        if dept_code:
-            mask &= df_summary["部門編號"] == dept_code
+        ...
 
-        df_result = df_summary[mask]
-
-        # ...（後面邏輯保持不變，只需縮排齊一層即可）
-        # 分開為其他表格建立遮罩
-        eff_mask = pd.Series(True, index=df_eff.index)
-        mgr_mask = pd.Series(True, index=df_mgr.index)
-        staff_mask = pd.Series(True, index=df_staff.index)
 
         if area:
             eff_mask &= df_eff["區主管"] == area
