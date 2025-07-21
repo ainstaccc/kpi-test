@@ -9,12 +9,13 @@ FILE_URL = "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06
 def load_data():
     xls = pd.ExcelFile(FILE_URL, engine="openpyxl")
     df_summary = xls.parse("門店 考核總表", header=1)
-    df_eff = xls.parse("人效分析", header=1)
+    df_eff = xls.parse("人效分析", header=1)  # 不指定 na_values，保留原始錯誤文字
     df_mgr = xls.parse("店長副店 考核明細", header=1)
     df_staff = xls.parse("店員儲備 考核明細", header=1)
     df_dist = xls.parse("等級分布", header=None, nrows=15, usecols="A:N")
     summary_month = xls.parse("門店 考核總表", nrows=1).columns[0]
     return df_summary, df_eff, df_mgr, df_staff, df_dist, summary_month
+
 
 def format_eff(df):
     if df.empty:
@@ -38,32 +39,35 @@ def main():
         col1, col2 = st.columns(2)
         area = col1.selectbox("區域/區主管", options=[
             "", "李政勳", "鄧思思", "林宥儒", "羅婉心", "王建樹", "楊茜聿", 
-            "陳宥蓉", "吳岱侑", "翁聖閔", "黃啟周", "栗晉屏", "王瑞辰"
+            "陳宥蓉", "吳岱侑", "翁聖閔", "黃啓周", "栗晉屏", "王瑞辰"
         ])
         dept_code = col2.text_input("部門編號/門店編號")
-        emp_id = st.text_input("員工編號")
-        emp_name = st.text_input("人員姓名")
+
         month = st.selectbox("查詢月份", options=["2025/06"])
 
-    st.markdown(" <br><br>", unsafe_allow_html=True)
-    st.image("https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg", caption="2025/06 📈本月考核等級分布", use_container_width=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    # ✅ 正確的圖片載入方式
+    st.image(
+        "https://raw.githubusercontent.com/ainstaccc/kpi-checker/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg",
+        caption="2025/06 📈本月考核等級分布",
+        use_container_width=True
+    )
+
     st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button("🔎 查詢", type="primary"):
-
+        # ✅ 查詢邏輯正式啟動（請將下方所有邏輯內縮）
         # Filter logic for summary
         mask = pd.Series(True, index=df_summary.index)
         if area:
             mask &= df_summary["區主管"] == area
         if dept_code:
             mask &= df_summary["部門編號"] == dept_code
-        if emp_id:
-            mask &= df_summary["員編"].astype(str) == emp_id
-        if emp_name:
-            mask &= df_summary["人員姓名"].str.contains(emp_name)
 
         df_result = df_summary[mask]
 
+        # ...（後面邏輯保持不變，只需縮排齊一層即可）
         # 分開為其他表格建立遮罩
         eff_mask = pd.Series(True, index=df_eff.index)
         mgr_mask = pd.Series(True, index=df_mgr.index)
@@ -77,14 +81,7 @@ def main():
             eff_mask &= df_eff["部門編號"] == dept_code
             mgr_mask &= df_mgr["部門編號"] == dept_code
             staff_mask &= df_staff["部門編號"] == dept_code
-        if emp_id:
-            eff_mask &= df_eff["員編"].astype(str) == emp_id
-            mgr_mask &= df_mgr["員編"].astype(str) == emp_id
-            staff_mask &= df_staff["員編"].astype(str) == emp_id
-        if emp_name:
-            eff_mask &= df_eff["人員姓名"].str.contains(emp_name)
-            mgr_mask &= df_mgr["人員姓名"].str.contains(emp_name)
-            staff_mask &= df_staff["人員姓名"].str.contains(emp_name)
+
 
         df_eff_result = df_eff[eff_mask]
         df_mgr_result = df_mgr[mgr_mask]
@@ -112,7 +109,12 @@ def main():
         
         # 顯示
         st.markdown(f"共查得：{len(df_eff_result_fmt)} 筆")
-        st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+        try:
+            st.dataframe(df_eff_result_fmt.style.format(format_dict), use_container_width=True)
+        except Exception as e:
+            st.warning(f"⚠️ 資料格式化失敗，原因：{e}，將改以原始資料顯示")
+            st.dataframe(df_eff_result_fmt, use_container_width=True)
+
 
 
 
