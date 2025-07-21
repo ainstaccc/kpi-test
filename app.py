@@ -46,7 +46,7 @@ def main():
         month = st.selectbox("查詢月份", options=["2025/06"])
 
     st.markdown(" <br><br>", unsafe_allow_html=True)
-    st.image("https://github.com/ainstaccc/kpi-checker/raw/main/2025.06%20%E8%80%83%E6%A0%B8%E7%AD%89%E7%B4%9A%E5%88%86%E5%B8%83.jpg", caption="2025/06 📈本月考核等級分布", use_container_width=True)
+    st.image("https://github.com/ainstaccc/kpi-checker/raw/1b703b3711c748e025ff26db649cf123192da681/2025.06%20MST_GD.jpg", caption="2025/06 📈本月考核等級分布", use_container_width=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button("🔎 查詢", type="primary"):
