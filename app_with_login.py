@@ -5,53 +5,70 @@ import requests
 # Google OAuth 設定
 CLIENT_ID = "308161352982-u2jhji1lcqqb42o7oql0me3nat6l3efp.apps.googleusercontent.com"
 CLIENT_SECRET = "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"
+REDIRECT_URI = "https://kpi-checker-junasnlqjy9vnrtp58g2xv.streamlit.app/"
+SCOPE = "email profile openid"
 
-oauth = OAuth2Component(
+# 建立 OAuth 元件
+oauth2 = OAuth2Component(
     client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
-    authorize_endpoint="https://accounts.google.com/o/oauth2/auth",
-    token_endpoint="https://oauth2.googleapis.com/token",
-    revoke_endpoint="https://oauth2.googleapis.com/revoke",
+    authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+    access_token_url="https://oauth2.googleapis.com/token",
+    redirect_uri=REDIRECT_URI,
+    scopes=[SCOPE]
 )
 
+# ✅ 設定白名單（可用 Gmail）
+ALLOWED_USERS = [
+    "ainstaccc@gmail.com",
+    "ray@mistore.com.tw",
+    "iven@mistore.com.tw",
+    "guangan@mistore.com.tw",
+    "wanju@mistore.com.tw",
+    "hsiao@mistore.com.tw",
+    "jc@mistore.com.tw",
+    "keanu@mistore.com.tw",
+    "katie@mistore.com.tw",
+    "sisi@mistore.com.tw",
+    "lizh@mistore.com.tw",
+    "jen@mistore.com.tw",
+    "mei@mistore.com.tw",
+    "annie@mistore.com.tw",
+    "ming@mistore.com.tw",
+    "ting@mistore.com.tw",
+    "cherry@mistore.com.tw",
+    "vivian@mistore.com.tw",
+    "amy@mistore.com.tw",
+    "ivy@mistore.com.tw",
+    "linda@mistore.com.tw",
+    "vivi@mistore.com.tw"
+]
+
+
+# 取得使用者 email
 def get_user_email(token):
-    """使用 access_token 查詢使用者 Email"""
-    response = requests.get(
-        "https://www.googleapis.com/oauth2/v1/userinfo",
-        headers={"Authorization": f"Bearer {token['access_token']}"}
-    )
-    if response.status_code == 200:
-        return response.json().get("email", "unknown")
-    else:
-        return "unknown"
-
-def main():
-    st.title("🔐 米斯特 門市 工作績效月考核查詢系統 登入驗證")
-    
-    # 登入按鈕（點擊後導入 Google OAuth 流程）
-    token = oauth.authorize_button(
-        name="📧 使用 Google 帳號登入",
-        redirect_uri="http://localhost:8501",
-        scope=["https://www.googleapis.com/auth/userinfo.email"],
-        key="google"
-    )
-
     if token:
-        user_email = get_user_email(token)
-        st.success(f"✅ 登入成功：{user_email}")
+        headers = {'Authorization': f'Bearer {token}'}
+        user_info = requests.get('https://www.googleapis.com/oauth2/v1/userinfo', headers=headers).json()
+        return user_info.get("email", "")
+    return ""
 
-        # 限制特定網域或帳號白名單（這邊只做範例）
-        if not user_email.endswith("@gmail.com"):
-            st.error("❌ 此帳號無授權使用本系統")
-            st.stop()
+# --- 登入流程 ---
+st.title("📋 米斯特 門市 工作績效月考核查詢系統")
 
-        # 登入後的主畫面功能
-        st.markdown("### 🎯 查詢畫面主頁（登入後才可見）")
-        st.write("這裡可以放入你的查詢模組與數據展示功能")
+token = oauth2.authorize_button("🔐 使用 Google 帳號登入")
 
-    else:
-        st.warning("⚠️ 尚未登入，請先使用 Google 帳號登入")
+if token:
+    user_email = get_user_email(token)
+    st.success(f"✅ 登入成功：{user_email}")
+
+    if user_email not in ALLOWED_USERS:
+        st.error("❌ 此帳號未被授權使用本系統")
         st.stop()
 
-if __name__ == "__main__":
-    main()
+    # ✅ 登入成功＆白名單通過後，顯示主畫面內容
+    st.markdown("### 📊 米斯特 門市 工作績效月考核查詢系統")
+    st.write("這裡可以顯示你原本的查詢模組、考核總表、人效分析、考核項目明細等主畫面內容。")
+
+else:
+    st.info("請先登入以使用本系統。")
