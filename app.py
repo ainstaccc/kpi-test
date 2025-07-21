@@ -177,12 +177,7 @@ def main():
         
         output_excel.seek(0)
         
-        st.download_button(
-            label="📥 匯出查詢結果（Excel）",
-            data=output_excel,
-            file_name="查詢結果.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+
 
 
 
