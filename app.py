@@ -55,10 +55,11 @@ def main():
         st.markdown("**🔺查詢條件任一欄即可，避免多重條件造成查詢錯誤。**")
         col1, col2 = st.columns(2)
         area = col1.selectbox("區域/區主管", options=[
-            "", "李政勳", "鄧思思", "林宥儒", "羅婉心", "王建樹", "楊茜聿",
+            "", "李政勳", "林宥儒", "羅婉心", "王建樹", "楊茜聿",
             "陳宥蓉", "吳岱侑", "翁聖閔", "黃啓周", "栗晉屏", "王瑞辰"
         ])
         dept_code = col2.text_input("部門編號/門店編號")
+        month = st.selectbox("查詢月份", options=["2025/06"])
 
     st.markdown("<br><br>", unsafe_allow_html=True)
 
