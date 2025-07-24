@@ -1,9 +1,0 @@
-streamlit==1.31.1
-pandas==2.2.2
-openpyxl==3.1.2
-streamlit-oauth
-requests
-xlsxwriter==3.2.0
-
-
-
